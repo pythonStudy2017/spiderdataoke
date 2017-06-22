@@ -17,10 +17,6 @@ import urllib
 import sys
 from bs4 import BeautifulSoup
 
-#2、获取目标网址内容，打开并读取商品列表页
-r = requests.get("http://www.dataoke.com/qlist/")
-html = r.text
-#print(html)
 '''
 print(r.status_code)#返回码,200为正常打开
 print(r.headers)#返回头部信息
@@ -28,13 +24,79 @@ print(r.encoding)#返回编码信息
 print(r.content) #返回内容
 '''
 
+pageNum = 1;
+while(pageNum != "0"):#遍历大淘客list页面数据，从第一页开始到最后一页全部遍历
+
+    #2、获取目标网址内容，打开并读取商品列表页
+    r = requests.get("http://www.dataoke.com/qlist/?page="+str(pageNum))
+    html = r.text
+    #print(html)
+    #3、选择要爬取的模块
+    soup = BeautifulSoup(html,'html.parser')
+    itemIDass =soup.select("div.goods-img a[href]")
+
+    for i in range(0, len(itemIDass)):#遍历每一页中所有宝贝信息，包括标题、名称、图片、详情链接地址等
+        itemID = itemIDass[i]['href']
+        itemUrl = "www.dataoke.com" + itemID
+        # print(itemUrl)
+        # 获取宝贝推广主图
+        itemImgass = soup.select("div.goods-img a img")
+        itemImg = itemImgass[i]["data-original"]
+        # print(itemImg)
+        # 获取宝贝推广标题
+        itemHeadass = soup.select("div.goods-info a")
+        itemHead = itemHeadass[i].text
+        itemHeadHref = itemHeadass[i]['href']
+        print(itemHeadHref)
+        '''
+        在此处查看每个宝贝详细页面：
+            1、使用获取翻页方式的代码来查看详情，注意修改下边代码的url及前边变量名称
+                r = requests.get("http://www.dataoke.com/qlist/?page="+str(pageNum))
+                html = r.text
+            2、获取详情页某区域数值和获取list页面中某区域数据方式一样
+        '''
+
+        # 获取宝贝券后价
+        itemPriceass = soup.select("div.goods-price p b")
+        itemPrice = itemPriceass[i].text
+        # print(itemPrice)
+        # 获取宝贝佣金、佣金比例
+        itemYjass = soup.select("div.goods-yj")
+        itemYj = itemYjass[i]['title']
+        # print(itemYj)
+        itemPerass = soup.select("div.goods-yj p")
+        itemPer = itemPerass[i].text
+        # print (itemPer)
+        # 获取宝贝优惠券面额  ??????????????????????????????????????????????????????
+        itemQuanass = soup.select("div.goods-quan fl")
+        # print (itemQuanass)
+        # 获取宝贝销量
+        itemXlass = soup.select("span.fl b")
+        itemXl = itemXlass[i].text
+        # print (itemXl)
+        # 获取宝贝店铺类型?????????????????????????????????????????????????????????
+        itemTypeass = soup.select("div.tag clearfix i")
+        # 获取宝贝优惠券数量及剩余情况
+        itemQuannumass = soup.select("span.margin-num")
+        itemQuannum = itemQuannumass[i].text
+        #print(itemQuannum)
+    # 获取宝贝放单人
+
+    #是否继续翻页:如果本页有宝贝继续翻页；否则停止
+    if len(itemIDass) == 0:
+            pageNum = 0
+    else:
+        pageNum = pageNum +1
+
+
+'''
 #3、选择要爬取的模块
 soup = BeautifulSoup(html,'html.parser')
 #print(soup.prettify())#格式化输出
 #获取dataoke宝贝链接
 itemIDass =soup.select("div.goods-img a[href]")
-for i in range(0,10000):
-    itemID=itemIDass [i]['href']
+for i in range(0,len(itemIDass)):
+    itemID=itemIDass[i]['href']
     itemUrl="www.dataoke.com"+itemID
     #print(itemUrl)
 #获取宝贝推广主图
@@ -66,7 +128,11 @@ for i in range(0,10000):
 #获取宝贝店铺类型?????????????????????????????????????????????????????????
     itemTypeass=soup.select("div.tag clearfix i")
 #获取宝贝优惠券数量及剩余情况
+    itemQuannumass=soup.select("span.margin-num")
+    itemQuannum=itemQuannumass[i].text
+    print(itemQuannum)
 #获取宝贝放单人
+'''
 
 
 
@@ -109,4 +175,5 @@ for i in range(0,10000):
 #获取所有图片链接
 #imgLinks = soup.select('div.goods-img a[src]')
 #itemLinks =soup.select('div.goods-img a[href]')
+
 
